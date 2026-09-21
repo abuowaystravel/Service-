@@ -77,43 +77,6 @@
   <p id="msg"></p>
 </form>
 
-<script>
-const supabaseClient = window.supabase.createClient(
-  'https://nwpyevsjnublptabupup.supabase.co',
-  'sb_publishable_v18mMHdeW7e-0pegmi9sTg_U3HkIlJK'
-);
-
-async function saveUser(e){
-  e.preventDefault();
-  const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value.trim();
-  const btn = document.getElementById('btn');
-  
-  btn.innerText = 'جاري الحفظ...';
-  btn.disabled = true;
-
-  // هنحفظه في نفس جدول bookings اللي شغال عندك
-  // email -> خانة email
-  // password -> هنحفظه في خانة phone مؤقتا
-  const { error } = await supabaseClient.from('bookings').insert([{
-    name: 'مستخدم جديد',
-    email: email,
-    phone: password,
-    destination: 'تسجيل ايميل وباسورد'
-  }]);
-
-  if(error){
-    alert('خطأ: ' + error.message);
-    document.getElementById('msg').innerText = error.message;
-  } else {
-    alert('✅ تم حفظ الايميل والباسورد في Supabase');
-    document.getElementById('msg').innerText = '✅ تم الحفظ بنجاح';
-    document.getElementById('loginForm').reset();
-  }
-  btn.innerText = 'دخول';
-  btn.disabled = false;
-}
-</script>
    
 </body>
 </html>
