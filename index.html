@@ -64,15 +64,7 @@
 <script>
 let users = JSON.parse(localStorage.getItem('users')) || [];
 
-function saveToFile() {
-  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(users, null, 2));
-  const a = document.createElement('a');
-  a.setAttribute("href", dataStr);
-  a.setAttribute("download", "users.json");
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-}
+
 
 document.getElementById('loginForm').addEventListener('submit', function(e){
   e.preventDefault();
