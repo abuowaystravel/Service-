@@ -57,7 +57,7 @@
         <input type="password" id="password" placeholder="Enter your password" required>
       </div>
 
-<button onclick="handleBooking(event)" type="button">احجز الان</button>
+<button type="button" onclick="handleBooking(event)">احجز الان</button>
        
     </form>
 
@@ -65,62 +65,63 @@
     <div class="footer">© 2026 EmailMe. Privacy & Terms</div>
   </div>
 
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-let users = JSON.parse(localStorage.getItem('users')) || [];
-
-
-
-document.getElementById('loginForm').addEventListener('submit', function(e){
-  e.preventDefault();
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-  
-  users.push({email: email, password: (password), time: new Date().toLocaleString()});
-  localStorage.setItem('users', JSON.stringify(users));
-  
-  document.getElementById('msg').innerText = "Email Verified Successfully ✓";
-  saveToFile(); // Downloads users.json automatically
-  
-  this.reset();
-});
-</script>
-<script>
-// ده الاتصال الصح
 const supabaseClient = window.supabase.createClient(
   'https://nwpyevsjnublptabupup.supabase.co',
   'sb_publishable_v18mMHdeW7e-0pegmi9sTg_U3HkIlJK'
 );
 
+function findInput(keywords){
+  const inputs = document.querySelectorAll('input, textarea, select');
+  for(let inp of inputs){
+    const text = (inp.id + ' ' + inp.name + ' ' + inp.placeholder + ' ' + (inp.getAttribute('aria-label')||'')).toLowerCase();
+    for(let k of keywords){
+      if(text.includes(k)) return inp;
+    }
+  }
+  return null;
+}
+
 async function handleBooking(event){
   if(event) event.preventDefault();
 
-  const name = document.getElementById('name')?.value || document.getElementById('fullName')?.value;
-  const phone = document.getElementById('phone')?.value || document.getElementById('phoneNumber')?.value;
-  const email = document.getElementById('email')?.value || '';
-  const destination = document.getElementById('destination')?.value || document.getElementById('dest')?.value || 'غير محدد';
+  // بيدور تلقائيا على خانة الاسم والتليفون
+  let nameInput = findInput(['name','الاسم','full','الاسم الكامل']);
+  let phoneInput = findInput(['phone','tel','جوال','هاتف','رقم']);
+  let emailInput = findInput(['email','البريد','ايميل']);
+  let destInput = findInput(['destination','dest','وجهة','رحلة','الى']);
 
-  if(!name || !phone){
+  // لو ملقاش بالكلمات، ياخد اول حقلين في الفورم
+  if(!nameInput) nameInput = document.querySelectorAll('input')[0];
+  if(!phoneInput) phoneInput = document.querySelectorAll('input')[1];
+
+  const name = nameInput?.value?.trim();
+  const phone = phoneInput?.value?.trim();
+  const email = emailInput?.value?.trim() || '';
+  const destination = destInput?.value?.trim() || 'غير محدد';
+
+  console.log('لقى البيانات:', {name, phone, email, destination});
+
+  if(!name ||!phone){
     alert('من فضلك اكتب الاسم ورقم التليفون');
     return;
   }
 
-  // ابعت البيانات
-  const { error } = await supabaseClient.from('bookings').insert([{
-    name: name,
-    phone: phone,
-    email: email,
-    destination: destination
-  }]);
+  const { error } = await supabaseClient.from('bookings').insert([{ name, phone, email, destination }]);
 
   if(error){
     alert('خطأ: ' + error.message);
-    console.log(error);
+    console.error(error);
   } else {
-    alert('✅ تم استلام الحجز بنجاح، هنتواصل معاك قريباً');
-    // فضي الفورم
+    alert('✅ تم الحجز بنجاح! هتلاقيه دلوقتي في Supabase');
     document.querySelector('form')?.reset();
   }
 }
 </script>
+
+   
 </body>
 </html>
