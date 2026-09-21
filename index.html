@@ -88,5 +88,63 @@ document.getElementById('loginForm').addEventListener('submit', function(e){
   this.reset();
 });
 </script>
+
+
+   <!-- ========== كود ربط الحجوزات بـ Supabase - انسخه كله ========== -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // 1. الربط
+  const supabase = window.supabase.createClient(
+    'https://nwpyevsjnublptabupup.supabase.co',
+    'sb_publishable_v18mMHdeW7e-0pegmi9sTg_U3HkIlJK'
+  );
+
+  // 2. متغير الحجوزات (لو عندك واحد قديم سيبه)
+  let users = JSON.parse(localStorage.getItem('users') || '[]');
+
+  // 3. دي الـ function الجديدة اللي هتحفظ في المكانين
+  async function saveToFile() {
+    // أ- ينزل ملف json كنسخة احتياطية (كودك القديم)
+    const dataStr = "data:text/json;charset=utf-8,[STRIPPED] + encodeURIComponent(JSON.stringify(users, null, 2));
+    const a = document.createElement('a');
+    a.setAttribute("href", dataStr);
+    a.setAttribute("download", "users.json");
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    // ب- يحفظ في Supabase (الجديد)
+    if(users.length > 0){
+      const last = users[users.length - 1];
+      const { error } = await supabase.from('bookings').insert([{
+        name: last.name,
+        email: last.email,
+        phone: last.phone,
+        destination: last.destination
+      }]);
+      if(!error) alert('تم حفظ الحجز بنجاح في قاعدة البيانات!');
+    }
+  }
+
+  // 4. دي اللي هتنده عليها لما العميل يدوس "احجز"
+  function handleBooking(){
+    const newUser = {
+      name: document.getElementById('name')?.value || '',
+      email: document.getElementById('email')?.value || '',
+      phone: document.getElementById('phone')?.value || '',
+      destination: document.getElementById('destination')?.value || ''
+    };
+    
+    if(!newUser.name || !newUser.phone){
+      alert('من فضلك املأ البيانات');
+      return;
+    }
+
+    users.push(newUser);
+    localStorage.setItem('users', JSON.stringify(users));
+    saveToFile();
+  }
+</script>
+<!-- ================= نهاية الكود ================= -->
 </body>
 </html>
