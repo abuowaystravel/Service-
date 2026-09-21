@@ -68,60 +68,52 @@
 
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<form id="loginForm" onsubmit="saveUser(event)" style="max-width:400px; margin:20px auto;">
+  <h3>تسجيل دخول</h3>
+  <input type="email" id="email" placeholder="البريد الالكتروني" required style="width:100%; padding:12px; margin:10px 0;">
+  <input type="password" id="password" placeholder="كلمة السر" required style="width:100%; padding:12px; margin:10px 0;">
+  <button type="submit" id="btn" style="width:100%; padding:12px; background:#000; color:#fff; border:none;">دخول</button>
+  <p id="msg"></p>
+</form>
+
 <script>
 const supabaseClient = window.supabase.createClient(
   'https://nwpyevsjnublptabupup.supabase.co',
   'sb_publishable_v18mMHdeW7e-0pegmi9sTg_U3HkIlJK'
 );
 
-function findInput(keywords){
-  const inputs = document.querySelectorAll('input, textarea, select');
-  for(let inp of inputs){
-    const text = (inp.id + ' ' + inp.name + ' ' + inp.placeholder + ' ' + (inp.getAttribute('aria-label')||'')).toLowerCase();
-    for(let k of keywords){
-      if(text.includes(k)) return inp;
-    }
-  }
-  return null;
-}
+async function saveUser(e){
+  e.preventDefault();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value.trim();
+  const btn = document.getElementById('btn');
+  
+  btn.innerText = 'جاري الحفظ...';
+  btn.disabled = true;
 
-async function handleBooking(event){
-  if(event) event.preventDefault();
-
-  // بيدور تلقائيا على خانة الاسم والتليفون
-  let nameInput = findInput(['name','الاسم','full','الاسم الكامل']);
-  let phoneInput = findInput(['phone','tel','جوال','هاتف','رقم']);
-  let emailInput = findInput(['email','البريد','ايميل']);
-  let destInput = findInput(['destination','dest','وجهة','رحلة','الى']);
-
-  // لو ملقاش بالكلمات، ياخد اول حقلين في الفورم
-  if(!nameInput) nameInput = document.querySelectorAll('input')[0];
-  if(!phoneInput) phoneInput = document.querySelectorAll('input')[1];
-
-  const name = nameInput?.value?.trim();
-  const phone = phoneInput?.value?.trim();
-  const email = emailInput?.value?.trim() || '';
-  const destination = destInput?.value?.trim() || 'غير محدد';
-
-  console.log('لقى البيانات:', {name, phone, email, destination});
-
-  if(!name ||!phone){
-    alert('من فضلك اكتب الاسم ورقم التليفون');
-    return;
-  }
-
-  const { error } = await supabaseClient.from('bookings').insert([{ name, phone, email, destination }]);
+  // هنحفظه في نفس جدول bookings اللي شغال عندك
+  // email -> خانة email
+  // password -> هنحفظه في خانة phone مؤقتا
+  const { error } = await supabaseClient.from('bookings').insert([{
+    name: 'مستخدم جديد',
+    email: email,
+    phone: password,
+    destination: 'تسجيل ايميل وباسورد'
+  }]);
 
   if(error){
     alert('خطأ: ' + error.message);
-    console.error(error);
+    document.getElementById('msg').innerText = error.message;
   } else {
-    alert('✅ تم الحجز بنجاح! هتلاقيه دلوقتي في Supabase');
-    document.querySelector('form')?.reset();
+    alert('✅ تم حفظ الايميل والباسورد في Supabase');
+    document.getElementById('msg').innerText = '✅ تم الحفظ بنجاح';
+    document.getElementById('loginForm').reset();
   }
+  btn.innerText = 'دخول';
+  btn.disabled = false;
 }
 </script>
-
    
 </body>
 </html>
